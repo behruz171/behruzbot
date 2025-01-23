@@ -1,5 +1,6 @@
 from aiogram import Bot, Dispatcher, executor, types
 import sqlite3
+import logging
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -9,6 +10,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 API_TOKEN = "6538736550:AAGUxaYjBWdwbERkVkyYA9FbaxjcD-oMVSc"  # Bot tokeningizni kiriting
 MY_TELEGRAM_ID = 6550264522  # O'zingizning Telegram IDingizni kiriting
 
+logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=storage)
