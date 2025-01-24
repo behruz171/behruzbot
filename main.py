@@ -10,11 +10,11 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 API_TOKEN = "6538736550:AAGUxaYjBWdwbERkVkyYA9FbaxjcD-oMVSc"  # Bot tokeningizni kiriting
 MY_TELEGRAM_ID = 6550264522  # O'zingizning Telegram IDingizni kiriting
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=storage)
-dp.middleware.setup(LoggingMiddleware())
+# dp.middleware.setup(LoggingMiddleware())
 
 class Form(StatesGroup):
     reply_to_message = State()
@@ -79,12 +79,19 @@ async def handle_group_messages(message: types.Message):
             await bot.send_sticker(MY_TELEGRAM_ID, message.sticker.file_id, reply_markup=keyboard)
         elif message.animation:  # GIF uchun
             await bot.send_animation(MY_TELEGRAM_ID, message.animation.file_id, reply_markup=keyboard)
+        elif message.audio:
+            await bot.send_audio(MY_TELEGRAM_ID, message.audio.file_id, reply_markup=keyboard)
+        elif message.voice:
+            await bot.send_voice(MY_TELEGRAM_ID, message.voice.file_id, reply_markup=keyboard)
+        elif message.video:
+            await bot.send_video(MY_TELEGRAM_ID, message.video.file_id, reply_markup=keyboard)
 
 # Faqat sizdan kelgan xabarlarni guruhga yuborish
 @dp.message_handler(lambda message: message.chat.id == MY_TELEGRAM_ID,  content_types=types.ContentTypes.ANY)
 async def handle_personal_messages(message: types.Message):
     group_chat_id = get_group_chat_id()  # Guruh ID olish
     if group_chat_id:
+        print(message)
         if message.text:
             await bot.send_message(group_chat_id, message.text)
         elif message.photo:
@@ -95,6 +102,12 @@ async def handle_personal_messages(message: types.Message):
             await bot.send_animation(group_chat_id, message.animation.file_id)
         elif message.document:  # Fayl uchun
             await bot.send_document(group_chat_id, message.document.file_id)
+        elif message.audio:  # Audio uchun
+            await bot.send_audio(group_chat_id, message.audio.file_id)
+        elif message.voice:  # Voice (ovozli xabar) uchun
+            await bot.send_voice(group_chat_id, message.voice.file_id)
+        elif message.video:  # Video uchun
+            await bot.send_video(group_chat_id, message.video.file_id)
         else:
             await message.reply("Guruh chat ID hali aniqlanmagan.")
 
@@ -116,7 +129,7 @@ async def handle_inline_button(callback_query: types.CallbackQuery, state: FSMCo
     await callback_query.answer()
 
 
-@dp.message_handler(state=Form.reply_to_message)
+@dp.message_handler(state=Form.reply_to_message, content_types=types.ContentTypes.ANY)
 async def process_reply_message(message: types.Message, state: FSMContext):
     # O'zgartirishlarni amalga oshiramiz
     # group_chat_id = get_group_chat_id()  # Guruh chat ID olish
@@ -127,11 +140,57 @@ async def process_reply_message(message: types.Message, state: FSMContext):
         group_chat_id = get_group_chat_id()  # Guruh chat ID olish
         if group_chat_id:
             # Javob xabarni yuborish
-            await bot.send_message(
-                group_chat_id,
-                message.text,  # Foydalanuvchidan olingan xabar matni
-                reply_to_message_id=message_id  # Oldingi xabarga javob sifatida
-            )
+            if message.text:
+                await bot.send_message(
+                    group_chat_id,
+                    message.text,
+                    reply_to_message_id=message_id
+                )
+            elif message.photo:
+                await bot.send_photo(
+                    group_chat_id,
+                    message.photo[-1].file_id,
+                    reply_to_message_id=message_id
+                )
+            elif message.sticker:
+                await bot.send_sticker(
+                    group_chat_id,
+                    message.sticker.file_id,
+                    reply_to_message_id=message_id
+                )
+            elif message.animation:  # GIF
+                await bot.send_animation(
+                    group_chat_id,
+                    message.animation.file_id,
+                    reply_to_message_id=message_id
+                )
+            elif message.document:  # Fayl
+                await bot.send_document(
+                    group_chat_id,
+                    message.document.file_id,
+                    reply_to_message_id=message_id
+                )
+            elif message.audio:  # Audio
+                await bot.send_audio(
+                    group_chat_id,
+                    message.audio.file_id,
+                    reply_to_message_id=message_id
+                )
+            elif message.voice:  # Ovozli xabar
+                await bot.send_voice(
+                    group_chat_id,
+                    message.voice.file_id,
+                    reply_to_message_id=message_id
+                )
+            elif message.video:  # Video
+                await bot.send_video(
+                    group_chat_id,
+                    message.video.file_id,
+                    reply_to_message_id=message_id
+                )
+            else:
+                await message.reply("Ushbu kontent turi qo'llab-quvvatlanmaydi.")
+
             await message.reply("Javob yuborildi!")
         else:
             await message.reply("Guruh chat ID aniqlanmagan.")
@@ -140,5 +199,7 @@ async def process_reply_message(message: types.Message, state: FSMContext):
 
         # Xabar yuborilgandan so'ng, holatni tozalash
     await state.finish()
+
+
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
