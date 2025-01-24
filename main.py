@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-API_TOKEN = "6538736550:AAGUxaYjBWdwbERkVkyYA9FbaxjcD-oMVSc"  # Bot tokeningizni kiriting
+API_TOKEN = "8142092293:AAHSMiivCrt4QcE6uwrx8R25TvweHzRhRc8"  # Bot tokeningizni kiriting
 MY_TELEGRAM_ID = 6550264522  # O'zingizning Telegram IDingizni kiriting
 
 # logging.basicConfig(level=logging.INFO)
